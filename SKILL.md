@@ -19,9 +19,10 @@ START_task
 
 Execute a two-stage reflection ("attention funnel"):
 
-1. Extract a list of adopted decisions and results from the session log.
-2. Await the user's selection of 2-3 key points.
-3. Synthesize a structured Handoff file (in English) according to the goal-setting matrix, update the directed XML history graph, and provide a brief summary report to the user (in Russian).
+1. Ask the user to state the goal (vector) of the next session BEFORE extracting facts (frame-first: the scoring frame must exist before the fact list is built).
+2. Extract a numbered list of adopted decisions and results (including rejected paths) from the session log, each scored 1–10 for handoff-utility relative to the stated goal.
+3. Await the user's triage: the user marks 2–3 points as CORE and marks the definitely-unneeded ones as EXCLUDED; all unmarked points default to SUPPORTING CONTEXT.
+4. Synthesize a structured Handoff file (in English) according to the goal-setting matrix, filtering SUPPORTING CONTEXT by the Coherence Test, update the directed XML history graph, and provide a brief summary report to the user (in Russian).
 END_task
 
 START_environment
@@ -55,12 +56,21 @@ START_working_patterns
 
 ### Working Patterns
 
-* `TRIGGER`: Request to close the session → `ACTION`: Read `index.xml`. Output a numbered list of adopted decisions and results (including rejected paths) with an importance score (1–10). Ask the user to select 2–3 key points. → `GOAL`: Provide a raw snapshot of facts.
-* `TRIGGER`: Waiting for selection → `ACTION`: Suspend file operations and wait for the user's response, as only a human can define the correct business vector.
-* `TRIGGER`: User selected the points → `ACTION`: Validate the selection for the presence of a future vector (Target/Next). If a clear goal exists, proceed to synthesis. If NO goal is present, halt and explicitly ask the user: *"No future vector specified. Please define the goal for the next session or select one of the following hypotheses: [suggest 1-2 hypotheses based on the session log]"*. → `GOAL`: Prevent vector hallucinations and ensure explicit human targeting.
-* `TRIGGER`: Future vector is confirmed (initially or after prompt) → `ACTION`: Conduct deep reflection on the selected points and the validated vector. Categorize them according to the matrix (Why, What, Experience, Next) in English. → `GOAL`: Synthesize the artifact text.
+* `TRIGGER`: Request to close the session → `ACTION`: Read `index.xml` (session number and previous node name only). Ask the user a direct question: *"What is the goal of the next session?"* Do NOT propose hypotheses and do NOT infer the goal from the history graph — the vector belongs to the user alone. → `GOAL`: Establish the scoring frame before fact extraction; prevent vector drift from machine-generated anchors.
+* `TRIGGER`: Next-session goal stated by the user → `ACTION`: Output a numbered list of adopted decisions and results (including rejected paths), each with an importance score (1–10), where the score means handoff-utility relative to the stated goal, including blocking constraints (NOT narrative weight, NOT topical similarity). Ask the user to triage the list: mark 2–3 points as CORE and the definitely-unneeded ones as EXCLUDED; all unmarked points default to SUPPORTING CONTEXT. → `GOAL`: Provide a goal-framed snapshot of facts for triage.
+* `TRIGGER`: Waiting for user input (the goal or the triage) → `ACTION`: Suspend file operations and wait for the user's response, as only a human can define the correct business vector.
+* `TRIGGER`: User completed the triage → `ACTION`: Validate the stated goal and the selection for the presence of a clear future vector (Target/Next). If the goal stated at the start of the funnel is concrete, proceed to synthesis. If it turned out vague or missing, halt and explicitly ask the user: *"No future vector specified. Please define the goal for the next session or select one of the following hypotheses: [suggest 1-2 hypotheses based on the session log]"*. → `GOAL`: Prevent vector hallucinations and ensure explicit human targeting (recovery path, not the default path).
+* `TRIGGER`: Future vector is confirmed (initially or after prompt) → `ACTION`: Conduct deep reflection on the CORE points and the validated vector. Include SUPPORTING CONTEXT points only if they pass the Coherence Test; drop the excess to preserve atomicity. Categorize according to the matrix (Why, What, Experience, Next) in English: CORE drives What/Next, SUPPORTING CONTEXT fills Why/Experience, EXCLUDED points are dropped. → `GOAL`: Synthesize the artifact text.
 * `TRIGGER`: Text synthesized → `ACTION`: Create `.handoffs/[NNN]_[YYYYMMDD]_[short_semantic_name].md`, update `.handoffs/index.xml`, and output a brief summary report to the user in Russian. → `GOAL`: Physical fixation and user notification.
+
+**Selection Terminology:**
+* **CORE:** the 2–3 user-selected points that drive the handoff.
+* **EXCLUDED:** points explicitly rejected by the user; dropped entirely.
+* **SUPPORTING CONTEXT:** unmarked points, included only if they pass the Coherence Test. Typically one of: *prerequisites* (what must be assumed true), *local terminology* (decoding of session-local terms and codenames), *boundary conditions* (constraints within which CORE statements hold), *reference anchors* (load-bearing file/directory paths and entry points — include sparingly, paths rot fastest).
+* **Coherence Test:** include a point if and only if, without it, the CORE becomes ambiguous, misleading, or non-actionable for a zero-context agent. The point-level instrument of the Zero-Context Survival criterion.
 END_working_patterns
+
+START_artifact_templates
 
 ### Artifact Templates
 
