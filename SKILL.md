@@ -51,7 +51,7 @@ Artifact entity matrix:
 1. **[Why] Initial Problem:** The reason for launching the session and the task being solved (external context).
 2. **[What] Foundation (Current State):** Implemented logic, architecture, and patterns.
 3. **[Experience] Pitfalls:** Self-critique. Dead ends, errors, and rejected hypotheses (negative knowledge).
-4. **[Next] Vector and Uncertainties:** The goal of the next step and critical context deficits/blockers required to start.
+4. **[Next] Vector and Uncertainties:** The goal of the next step and critical context deficits/blockers required to start. For ARCHIVE artifacts: the load trigger, the future agent's objective, and first-check hints instead of a development target.
 END_entity_definitions
 
 START_working_patterns
@@ -59,11 +59,12 @@ START_working_patterns
 ### Working Patterns
 
 * `TRIGGER`: Request to close the session → `ACTION`: Read `index.xml` (session number and previous node name only). Then output the **Frame Question** and nothing else: *"What is the goal of the next session?"* Form contract: the first response consists of the question ONLY — no fact list, no scores, no vector candidates, no hypotheses; the numbered list is legal only in a message that FOLLOWS the user's answer. The only legal source of the goal is the user's direct reply — never the session log, todos, the agent's own prior statements, the history graph, or any artifact. → `GOAL`: Make stage merging structurally impossible; the frame is an input, not an inference.
+* `TRIGGER`: The user's reply to the Frame Question is keyword-led — it starts with an archive marker (`архив*` / `archive*`, case-insensitive, morphological prefix: «архив», «архивный», «archive»), e.g. `ARCHIVE: <domain>` → `ACTION`: Expand the reply into the **Archive Frame**: the goal is conditional context restoration — a future fresh session loads this handoff when any problem occurs within the user-named domain and solves it without re-research. The keyword must LEAD the reply: a goal that merely contains the word (e.g., a development task about archiving) does NOT fire the preset. If no domain is named, ask ONE bare question — *"Domain?"* — with no examples from the session log. The agent NEVER proposes this preset; it is user-initiated only. In the Archive Frame, handoff-utility means diagnostic value for an unknown future problem in the domain: system map, failure modes, pitfalls, and reference anchors take priority. Echo the expanded frame as the first line of the fact-list message; the user's triage reply is the confirmation/correction point. The expanded Archive Frame then enters the standard pipeline as the stated goal. The domain clarification is a legal sub-exchange (the Exchange Rule forbids merging steps, not clarifying them). → `GOAL`: One-word shorthand without vector inference.
 * `TRIGGER`: Next-session goal stated by the user (quoted verbatim from their reply) → `ACTION`: Output a numbered list of adopted decisions and results (including rejected paths), each with an importance score (1–10), where the score means handoff-utility relative to the stated goal, including blocking constraints (NOT narrative weight, NOT topical similarity). Score validity: a score that would stay the same under a different goal is invalid by definition — it measures narrative weight, not utility; if no goal has been stated, scores do not exist yet. Ask the user to triage the list: mark 2–3 points as CORE and the definitely-unneeded ones as EXCLUDED; all unmarked points default to SUPPORTING CONTEXT. → `GOAL`: Provide a goal-framed snapshot of facts for triage.
 * `TRIGGER`: Waiting for user input (the goal or the triage) → `ACTION`: Suspend file operations and wait for the user's response, as only a human can define the correct business vector.
-* `TRIGGER`: User completed the triage → `ACTION`: Validate the stated goal and the selection for the presence of a clear future vector (Target/Next). If the goal stated at the start of the funnel is concrete, proceed to synthesis. If it turned out vague or missing, halt and explicitly ask the user: *"No future vector specified. Please define the goal for the next session or select one of the following hypotheses: [suggest 1-2 hypotheses based on the session log]"*. This halt (the *recovery halt*) is the ONLY point in the protocol where the agent may formulate vector hypotheses; proposing them at the Frame Question stage is a protocol violation. → `GOAL`: Prevent vector hallucinations and ensure explicit human targeting (recovery path, not the default path).
+* `TRIGGER`: User completed the triage → `ACTION`: Validate the stated goal and the selection for the presence of a clear future vector (Target/Next). If the goal stated at the start of the funnel is concrete, proceed to synthesis. An expanded Archive Frame is a concrete vector by definition (trigger condition + domain + objective) and passes this gate. If it turned out vague or missing, halt and explicitly ask the user: *"No future vector specified. Please define the goal for the next session or select one of the following hypotheses: [suggest 1-2 hypotheses based on the session log]"*. This halt (the *recovery halt*) is the ONLY point in the protocol where the agent may formulate vector hypotheses; proposing them at the Frame Question stage is a protocol violation. → `GOAL`: Prevent vector hallucinations and ensure explicit human targeting (recovery path, not the default path).
 * `TRIGGER`: Future vector is confirmed (initially or after prompt) → `ACTION`: Conduct deep reflection on the CORE points and the validated vector. Include SUPPORTING CONTEXT points only if they pass the Coherence Test; drop the excess to preserve atomicity. Categorize according to the matrix (Why, What, Experience, Next) in English: CORE drives What/Next, SUPPORTING CONTEXT fills Why/Experience, EXCLUDED points are dropped. → `GOAL`: Synthesize the artifact text.
-* `TRIGGER`: Text synthesized → `ACTION`: Create `.handoffs/[NNN]_[YYYYMMDD]_[short_semantic_name].md`, update `.handoffs/index.xml`, and output a brief summary report to the user in Russian. → `GOAL`: Physical fixation and user notification.
+* `TRIGGER`: Text synthesized → `ACTION`: Create `.handoffs/[NNN]_[YYYYMMDD]_[short_semantic_name].md` (archive artifacts: `[NNN]_ARCH_[YYYYMMDD]_[short_semantic_name].md`), update `.handoffs/index.xml`, and output a brief summary report to the user in Russian. → `GOAL`: Physical fixation and user notification.
 
 **Selection Terminology:**
 * **CORE:** the 2–3 user-selected points that drive the handoff.
@@ -73,7 +74,7 @@ START_working_patterns
 
 **Stage Gates (self-check before sending each message):**
 * **Gate 1 — Question-only form:** the first response contains the Frame Question and nothing else; any fact list, score, or vector candidate in it is a violation.
-* **Gate 2 — Verbatim vector:** the goal is quoted from the user's direct reply; any other source (session log, todos, agent's own statements, history graph, artifacts) is a violation.
+* **Gate 2 — Verbatim vector:** the goal is quoted from the user's direct reply; any other source (session log, todos, agent's own statements, history graph, artifacts) is a violation (the ARCHIVE preset expanded per its trigger, echoed and confirmed at triage, counts as the user's direct reply).
 * **Gate 3 — Goal-dependent scores:** every score must change under at least one different goal; an invariant score is a violation.
 * **Gate 4 — Hypotheses locality:** vector hypotheses appear ONLY inside the recovery halt, never at the Frame Question.
 END_working_patterns
@@ -132,6 +133,8 @@ END_session_handoff
 ```
 
 *(Note: The CrossLinks block is omitted only for session 001)*
+
+*(Archive variant: for ARCHIVE artifacts the `_ARCH_` marker is applied consistently in ALL naming points — the file name, the frontmatter `name:`, the XML node name (`session_[NNN]_ARCH_[short_semantic_name]`), and `file_path` — and the node carries `TYPE="ARCHIVE"`. The Next section states the load trigger (when a future session should open this handoff), the future agent's objective, and first-check hints instead of a development target; the annotation and frontmatter description mention the archival purpose.)*
 END_artifact_templates
 
 START_completion_criteria
