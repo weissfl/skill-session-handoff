@@ -65,6 +65,7 @@ START_working_patterns
 * `TRIGGER`: User completed the triage → `ACTION`: Validate the stated goal and the selection for the presence of a clear future vector (Target/Next). If the goal stated at the start of the funnel is concrete, proceed to synthesis. An expanded Archive Frame is a concrete vector by definition (trigger condition + domain + objective) and passes this gate. If it turned out vague or missing, halt and explicitly ask the user: *"No future vector specified. Please define the goal for the next session or select one of the following hypotheses: [suggest 1-2 hypotheses based on the session log]"*. This halt (the *recovery halt*) is the ONLY point in the protocol where the agent may formulate vector hypotheses; proposing them at the Frame Question stage is a protocol violation. → `GOAL`: Prevent vector hallucinations and ensure explicit human targeting (recovery path, not the default path).
 * `TRIGGER`: Future vector is confirmed (initially or after prompt) → `ACTION`: Conduct deep reflection on the CORE points and the validated vector. Include SUPPORTING CONTEXT points only if they pass the Coherence Test; drop the excess to preserve atomicity. Categorize according to the matrix (Why, What, Experience, Next) in English: CORE drives What/Next, SUPPORTING CONTEXT fills Why/Experience, EXCLUDED points are dropped. → `GOAL`: Synthesize the artifact text.
 * `TRIGGER`: Text synthesized → `ACTION`: Create `.handoffs/[NNN]_[YYYYMMDD]_[short_semantic_name].md` (archive artifacts: `[NNN]_ARCH_[YYYYMMDD]_[short_semantic_name].md`), update `.handoffs/index.xml`, and output a brief summary report to the user in Russian. → `GOAL`: Physical fixation and user notification.
+* `TRIGGER`: Handoff file created and reported → `ACTION`: Seal the artifact: write once — never edit, never append. `index.xml` is append-only: new nodes only, existing nodes never change. A new handoff exists only through a new user-initiated session close — never on the agent's own initiative. Later decisions of the same session are not part of this artifact. → `GOAL`: History integrity — file ↔ index correspondence preserved.
 
 **Selection Terminology:**
 * **CORE:** the 2–3 user-selected points that drive the handoff.
@@ -83,7 +84,7 @@ START_artifact_templates
 
 ### Artifact Templates
 
-*All placeholders in brackets must be filled out in English.*
+*All placeholders in brackets must be filled out in English. The Seal block is fixed text and must be included verbatim.*
 
 **Template 1: Handoff File (.md)**
 
@@ -115,6 +116,11 @@ START_future_barriers
 END_future_barriers
 
 END_session_handoff
+
+START_seal
+### Seal
+*Immutable snapshot — read-only input. Do not edit, append, or extend this file on your own initiative: it must match its record in `index.xml`, contains only user-approved points, and may serve as the starting context of another session. Missing or outdated context → report in chat instead of modifying.*
+END_seal
 
 ```
 
