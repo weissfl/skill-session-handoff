@@ -70,7 +70,7 @@ START_working_patterns
 **Selection Terminology:**
 * **CORE:** the 2–3 user-selected points that drive the handoff.
 * **EXCLUDED:** points explicitly rejected by the user; dropped entirely.
-* **SUPPORTING CONTEXT:** unmarked points, included only if they pass the Coherence Test. Typically one of: *prerequisites* (what must be assumed true), *local terminology* (decoding of session-local terms and codenames), *boundary conditions* (constraints within which CORE statements hold), *reference anchors* (load-bearing file/directory paths and entry points — include sparingly, paths rot fastest).
+* **SUPPORTING CONTEXT:** unmarked points, included only if they pass the Coherence Test. Typically one of: *prerequisites* (what must be assumed true), *local terminology* (decoding of session-local terms and codenames), *boundary conditions* (constraints within which CORE statements hold), *reference anchors* (load-bearing file/directory paths, entry points, and document links such as runbooks, specs, or issues — include sparingly, paths rot fastest; in the artifact they are formatted as READ entries inside the Reference Anchors block).
 * **Coherence Test:** include a point if and only if, without it, the CORE becomes ambiguous, misleading, or non-actionable for a zero-context agent. The point-level instrument of the Zero-Context Survival criterion.
 
 **Stage Gates (self-check before sending each message):**
@@ -84,7 +84,7 @@ START_artifact_templates
 
 ### Artifact Templates
 
-*All placeholders in brackets must be filled out in English. The Seal block is fixed text and must be included verbatim.*
+*All placeholders in brackets must be filled out in English. The Seal block is fixed text and must be included verbatim. The Reference Anchors block is included only when reference anchors exist; its header and instruction line are fixed text, and entries use the READ format.*
 
 **Template 1: Handoff File (.md)**
 
@@ -114,6 +114,12 @@ START_future_barriers
 * **Target for Next Session:** [What to do next]
 * **Critical Uncertainties:** [Context deficits, blockers, or architectural questions to resolve first]
 END_future_barriers
+
+START_reference_anchors
+### Reference Anchors — mandatory reads
+*Reference anchors are mandatory reads: READ every listed file or link before acting on this handoff.*
+* READ `<path or URL>` — <what it contains / when it is needed>
+END_reference_anchors
 
 END_session_handoff
 
