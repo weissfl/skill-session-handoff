@@ -119,7 +119,7 @@ END_session_handoff
 
 START_seal
 ### Seal
-*Immutable snapshot — read-only input. Do not edit, append, or extend this file on your own initiative: it must match its record in `index.xml`, contains only user-approved points, and may serve as the starting context of another session. Missing or outdated context → report in chat instead of modifying.*
+*Immutable snapshot — read-only input. Do not edit, append, or extend this file on your own initiative: it must match its record in `index.xml`, contains only user-approved points, and serves only as the starting context of another session.*
 END_seal
 
 ```
